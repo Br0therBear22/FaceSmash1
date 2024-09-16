@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Facemash Clone</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      background-color: #f5f5f5;
+      color: #333;
+      height: 100vh;
+    }
+    .header {
+      width: 100%;
+      background-color: #8B0000;
+      padding: 20px 0;
+      text-align: center;
+      color: white;
+      font-size: 1.8rem;
+      font-weight: bold;
+    }
+    .sub-header {
+      margin-top: 10px;
+      font-size: 1.2rem;
+      text-align: center;
+    }
+    .container {
+      margin-top: 40px;
+      display: flex;
+      justify-content: space-around;
+      width: 80%;
+      max-width: 1000px;
+    }
+    .card {
+      width: 40%;
+      text-align: center;
+    }
+    .card img {
+      width: 300px;
+      height: 400px;
+      object-fit: cover;
+      border: 1px solid #ddd;
+    }
+    .or-text {
+      font-size: 1.3rem;
+      font-weight: bold;
+      margin: 0 20px;
+      align-self: center;
+    }
+    .vote-button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      transition: background-color 0.3s ease;
+    }
+    .vote-button:hover {
+      background-color: #0056b3;
+    }
+
+    /* Redesigned Final Screen */
+    .final-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100vh;
+      background-color: #f5f5f5;
+    }
+    .final-screen img {
+      width: 400px;
+      height: 500px;
+      object-fit: cover;
+      border: 2px solid #333;
+      border-radius: 10px;
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+    .final-message {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: #8B0000;
+      text-align: center;
+      margin-bottom: 30px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+    .final-subtext {
+      font-size: 1.2rem;
+      font-weight: normal;
+      color: #333;
+      margin-top: 20px;
+      text-align: center;
+    }
+    .final-button {
+      margin-top: 30px;
+      padding: 15px 30px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+    .final-button:hover {
+      background-color: #0056b3;
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Red Header -->
+  <div class="header">FACEMASH</div>
+  <div class="sub-header">Were we let in for our looks? No. Will we be judged on them? Yes.</div>
+  <h2 class="sub-header">Who's Hotter? Click to Choose.</h2>
+
+  <!-- Image Voting Container -->
+  <div class="container" id="imageContainer">
+    <div class="card">
+      <img id="image1" src="image 1.png" alt="Image 1">
+      <button class="vote-button" id="button1" onclick="voteForImage(1)">Vote for Image 1</button>
+    </div>
+    <div class="or-text">OR</div>
+    <div class="card">
+      <img id="image2" src="image 2.png" alt="Image 2">
+      <button class="vote-button" id="button2" onclick="voteForImage(2)">Vote for Image 2</button>
+    </div>
+  </div>
+
+  <!-- Redesigned Final Screen -->
+  <div class="final-screen" id="finalScreen">
+    <img id="finalImage" src="" alt="Final Image">
+    <div class="final-message">He is the hottest!</div>
+    <div class="final-subtext">Thank you for voting.</div>
+    <button class="final-button" onclick="window.location.reload();">Vote Again</button>
+  </div>
+
+  <script>
+    // Pool of images
+    let imagePool = [
+      { src: 'image 1.png', id: 'image1', number: 1 },
+      { src: 'image 2.png', id: 'image2', number: 2 },
+      { src: 'image 3.png', id: 'image3', number: 3 },
+      { src: 'image 4.png', id: 'image4', number: 4 },
+      { src: 'image 5.png', id: 'image5', number: 5 },
+      { src: 'image 6.png', id: 'image6', number: 6 },
+      { src: 'image 7.png', id: 'image7', number: 7 },
+      { src: 'image 8.png', id: 'image8', number: 8 }
+    ];
+
+    let currentImages = [];
+    let displayedImages = new Set(); // Keep track of displayed images
+    let lastClickedButtonId = ""; // Store the ID of the last clicked button
+
+    // Function to get two random unique images from the pool
+    function getTwoRandomImages() {
+      let selectedImages = [];
+      while (selectedImages.length < 2) {
+        const randomIndex = Math.floor(Math.random() * imagePool.length);
+        const selectedImage = imagePool[randomIndex];
+        if (!selectedImages.includes(selectedImage)) {
+          selectedImages.push(selectedImage);
+        }
+      }
+      return selectedImages;
+    }
+
+    // Function to initialize the images and button labels at the start
+    function initializeImages() {
+      currentImages = getTwoRandomImages();
+      document.getElementById('image1').src = currentImages[0].src;
+      document.getElementById('image2').src = currentImages[1].src;
+      document.getElementById('button1').textContent = `Vote for Image ${currentImages[0].number}`;
+      document.getElementById('button2').textContent = `Vote for Image ${currentImages[1].number}`;
+
+      // Track that these images have been displayed
+      displayedImages.add(currentImages[0].id);
+      displayedImages.add(currentImages[1].id);
+    }
+
+    // Voting function to store the last clicked button's ID and swap the other one
+    function voteForImage(imageNumber) {
+      // Track the button that was clicked
+      lastClickedButtonId = `image${imageNumber}`;
+
+      // Check if all images have been displayed at least once
+      if (displayedImages.size === imagePool.length) {
+        showFinalImage();  // Display the final chosen image
+      } else {
+        // Otherwise, continue swapping
+        const unclickedImageId = imageNumber === 1 ? 'image2' : 'image1';
+        swapUnclickedImage(unclickedImageId);
+      }
+    }
+
+    // Function to swap the unclicked image with a new random image
+    function swapUnclickedImage(unclickedImageId) {
+      const newImage = getRandomNewImage();
+      const buttonId = unclickedImageId === 'image1' ? 'button1' : 'button2';
+      document.getElementById(unclickedImageId).src = newImage.src;
+      document.getElementById(buttonId).textContent = `Vote for Image ${newImage.number}`;
+      displayedImages.add(newImage.id); // Track that this image has now been displayed
+    }
+
+    // Function to get a random new image from the pool
+    function getRandomNewImage() {
+      let newImage;
+      do {
+        const randomIndex = Math.floor(Math.random() * imagePool.length);
+        newImage = imagePool[randomIndex];
+      } while (displayedImages.has(newImage.id)); // Ensure the new image hasn't been displayed yet
+      return newImage;
+    }
+
+    // Function to display the final image and message
+    function showFinalImage() {
+      const finalScreen = document.getElementById('finalScreen');
+      const finalImage = document.getElementById('finalImage');
+      const imageContainer = document.getElementById('imageContainer');
+
+      // Hide the voting container and show the final screen
+      imageContainer.style.display = 'none';
+      finalScreen.style.display = 'flex';
+
+      // Display the image corresponding to the last clicked button
+      finalImage.src = document.getElementById(lastClickedButtonId).src;
+    }
+
+    // Initialize the images when the page loads
+    window.onload = initializeImages;
+  </script>
+
+</body>
+</html>
